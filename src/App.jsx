@@ -1,34 +1,48 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
+import { useState, useEffect } from 'react'
 import './App.css'
+import CoinInfo from './components/CoinInfo'
+
+const API_KEY = import.meta.env.VITE_APP_API_KEY
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [list, setList] = useState(null)
+
+  useEffect(() => {
+
+    async function fetchAllCoinData() {
+      const response = await fetch(
+        "https://min-api.cryptocompare.com/data/all/coinlist?&api_key"
+        + API_KEY
+      );
+      const json = await response.json();
+      setList(json);
+    }
+    fetchAllCoinData().catch(console.error);
+
+  }, []);
 
   return (
-    <>
-      <div>
-        <a href="https://vitejs.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
+   <>
+    <div className="whole-page">
+      <h1>Crypto List</h1>
+      <input
+        type="text"
+        placeholder="Search..."
+        onChange={(inputString) => searchItems(inputString.target.value)}
+      />
+      <ul>
+        {list && Object.entries(list.Data).map(([coin]) =>
+          list.Data[coin].PlatformType === "blockchain" ? (
+            <CoinInfo
+              image={list.Data[coin].ImageUrl}
+              name={list.Data[coin].FullName}
+              symbol={list.Data[coin].Symbol}
+            />
+          ) : null
+        )}
+      </ul>
+    </div>
+   </>
   )
 }
 
